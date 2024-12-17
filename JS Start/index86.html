@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NES Style Game with D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    .game-board {
+      background-color: black;
+    }
+    .player {
+      fill: limegreen;
+    }
+    .object {
+      fill: red;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Set up the SVG game board
+const width = 800;
+const height = 600;
+const playerWidth = 50;
+const playerHeight = 10;
+const objectWidth = 20;
+const objectHeight = 20;
+
+const svg = d3
+  .select("body")
+  .append("svg")
+  .attr("class", "game-board")
+  .attr("width", width)
+  .attr("height", height);
+
+// Create the player rectangle
+let playerX = width / 2 - playerWidth / 2;
+const playerY = height - 50;
+
+const player = svg
+  .append("rect")
+  .attr("class", "player")
+  .attr("x", playerX)
+  .attr("y", playerY)
+  .attr("width", playerWidth)
+  .attr("height", playerHeight);
+
+// Handle player movement
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") {
+    playerX = Math.max(0, playerX - 20); // Prevent going off-screen
+  } else if (e.key === "ArrowRight") {
+    playerX = Math.min(width - playerWidth, playerX + 20);
+  }
+  player.attr("x", playerX);
+});
+
+// Falling objects and scoring
+let score = 0;
+
+function spawnObject() {
+  const objectX = Math.random() * (width - objectWidth);
+  const object = svg
+    .append("rect")
+    .attr("class", "object")
+    .attr("x", objectX)
+    .attr("y", 0)
+    .attr("width", objectWidth)
+    .attr("height", objectHeight);
+
+  // Animate the object falling
+  object
+    .transition()
+    .duration(3000)
+    .ease(d3.easeLinear)
+    .attr("y", height)
+    .on("end", () => {
+      // Check collision
+      const objectY = parseFloat(object.attr("y"));
+      const objectXEnd = objectX + objectWidth;
+
+      const playerXEnd = playerX + playerWidth;
+
+      if (
+        objectY >= playerY &&
+        objectY <= playerY + playerHeight &&
+        objectXEnd >= playerX &&
+        objectX <= playerXEnd
+      ) {
+        score += 1; // Increment score
+        console.log(`Score: ${score}`);
+      }
+      object.remove(); // Remove the object
+    });
+}
+
+// Spawn objects every second
+setInterval(spawnObject, 1000);
+
+  </script>
+</body>
+</html>
